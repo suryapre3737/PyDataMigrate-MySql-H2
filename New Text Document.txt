@@ -3,17 +3,30 @@
   const recorder = new MediaRecorder(stream);
   const chunks = [];
 
-  recorder.ondataavailable = e => chunks.push(e.data);
-  recorder.onstop = e => {
+  recorder.ondataavailable = e => {
+    if (e.data.size > 0) {
+      chunks.push(e.data);
+    }
+  };
+
+  recorder.onstop = () => {
     const blob = new Blob(chunks, { type: 'video/webm' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'screen_recording.webm';
     a.click();
+    URL.revokeObjectURL(url);
+    stream.getTracks().forEach(track => track.stop());
+    document.body.removeChild(stopBtn);
   };
 
   recorder.start();
-  alert('Recording started. Click OK to stop.');
-  recorder.stop();
+  console.log('Recording started');
+
+  const stopBtn = document.createElement('button');
+  stopBtn.textContent = 'Stop Recording';
+  stopBtn.style = 'position:fixed;top:20px;right:20px;z-index:9999;padding:10px;background:red;color:white;';
+  stopBtn.onclick = () => recorder.stop();
+  document.body.appendChild(stopBtn);
 })();
