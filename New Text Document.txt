@@ -1,0 +1,19 @@
+(async () => {
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+  const recorder = new MediaRecorder(stream);
+  const chunks = [];
+
+  recorder.ondataavailable = e => chunks.push(e.data);
+  recorder.onstop = e => {
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'screen_recording.webm';
+    a.click();
+  };
+
+  recorder.start();
+  alert('Recording started. Click OK to stop.');
+  recorder.stop();
+})();
